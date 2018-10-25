@@ -67,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-
         btnConexao.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -78,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
                         meuSocket.close();
                         conexao = false;
                         btnConexao.setText("Conectar");
-                        blue=true;
+                        blue = true;
                         Toast.makeText(getApplicationContext(), "Bluetooth Desconectado", Toast.LENGTH_LONG).show();
                     } catch (IOException erro) {
                         Toast.makeText(getApplicationContext(), "Erro" + erro, Toast.LENGTH_LONG).show();
@@ -157,30 +156,30 @@ public class MainActivity extends AppCompatActivity {
 
             case Solicita_Conexao:
                 if (resultCode == Activity.RESULT_OK) {
-                    MAC = data.getExtras().getString(ListaDispositivos.End_MAC);
+                    if (data != null){
+                        if(data.getExtras() != null)
+                            MAC = data.getExtras().getString(ListaDispositivos.End_MAC);
 
+                        //Toast.makeText(getApplicationContext(), "MAC" + MAC, Toast.LENGTH_LONG).show();
+                        meuDevice = meuBluetoothAdapter.getRemoteDevice(MAC);
 
-                    //Toast.makeText(getApplicationContext(), "MAC" + MAC, Toast.LENGTH_LONG).show();
-                    meuDevice = meuBluetoothAdapter.getRemoteDevice(MAC);
+                        try {
+                            meuSocket = meuDevice.createRfcommSocketToServiceRecord(MEU_UUID);
 
-                    try {
-                        meuSocket = meuDevice.createRfcommSocketToServiceRecord(MEU_UUID);
+                            meuSocket.connect();
+                            conexao = true;
 
-                        meuSocket.connect();
-                        conexao = true;
+                            connectedThread = new ConnectedThread(meuSocket);
+                            connectedThread.start();
 
-                        connectedThread = new ConnectedThread(meuSocket);
-                        connectedThread.start();
+                            btnConexao.setText("Desconectar");
+                            Toast.makeText(getApplicationContext(), "Conectado" + MAC, Toast.LENGTH_LONG).show();
 
-                        btnConexao.setText("Desconectar");
-                        Toast.makeText(getApplicationContext(), "Conectado" + MAC, Toast.LENGTH_LONG).show();
-
-                    } catch (IOException erro) {
-                        conexao = false;
-                        Toast.makeText(getApplicationContext(), "Erro ao Conectar" + erro, Toast.LENGTH_LONG).show();
+                        } catch (IOException erro) {
+                            conexao = false;
+                            Toast.makeText(getApplicationContext(), "Erro ao Conectar" + erro, Toast.LENGTH_LONG).show();
+                        }
                     }
-
-
                 } else {
                     Toast.makeText(getApplicationContext(), "Falha ao obter o MAC", Toast.LENGTH_LONG).show();
 
@@ -192,10 +191,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class ConnectedThread extends Thread {
+
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
 
-        public ConnectedThread(BluetoothSocket socket) {
+        ConnectedThread(BluetoothSocket socket) {
 
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
@@ -206,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
                 tmpIn = meuSocket.getInputStream();
                 tmpOut = meuSocket.getOutputStream();
             } catch (IOException e) {
+                e.printStackTrace();
             }
 
             mmInStream = tmpIn;
@@ -215,24 +216,27 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
 
 
-            byte[] buffer = new byte[1024];  // buffer store for the stream
+            byte[] buffer = new byte[5120];  // buffer store for the stream
             int bytes; // bytes returned from read()
 
             // Keep listening to the InputStream until an exception occurs
             while (blue) {
+
                 try {
-                    int bufferint[] = new int[1024];
+                    int bufferint[] = new int[5120];
 
-                        // Read from the InputStream
-                        bytes = mmInStream.read(buffer);//Conta quantos bytes estão no buffer
+                    // Read from the InputStream
+                    bytes = mmInStream.read(buffer);//Conta quantos bytes estão no buffer
 
-                    for (int j = 0; j < 1023; j++) {
+                    for (int j = 0; j < 5120; j++) {
                         bufferint[j] = buffer[j] & 0xff;// transformar o byte para int
                         //Log.d("Recebido", "Y =  " +bufferint[j] + " I= "+j+ " Bytes= "+bytes   );
+
+
                         //Inverte os Bits do int
-                        for (int i = 0; i < 4; i++) {
-                            bufferint[j] = swapBits(bufferint[j], i, 8 - i - 1);
-                        }
+//                        for (int i = 0; i < 4; i++) {
+//                            bufferint[j] = swapBits(bufferint[j], i, 8 - i - 1);
+//                        }
 
 
                         //Mostra o valor já invertido
@@ -240,13 +244,32 @@ public class MainActivity extends AppCompatActivity {
 
                     }
 
-                        TimeUnit.MILLISECONDS.sleep(2000);
+                    TimeUnit.MILLISECONDS.sleep(10000);
 
+                    // blue = false;
 
-                           // blue = false;
+                    //new arrawy
+                    int[] dados = new int[5];
+                    int[] inteiros = new int[buffer.length/5];
+                    int p = 0;
+                    int x = 0;
+                    for (int i = 0; i < bufferint.length; i++){
+                        //acumula os dads
+                        dados[x] = bufferint[i];
+                        x++;
 
-                        grafico(bufferint);
+                        //verifica se já acumulou 5 dados
+                        if ((i + 1) % 5 == 0){
+                            inteiros[p] = moda(dados);
+                            p++;
 
+                            //reseta os dados
+                            dados = new int[5];
+                            x = 0;
+                        }
+                    }
+
+                    grafico(inteiros);
 
 
                 } catch (Exception e) {
@@ -257,7 +280,26 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        public int swapBits(int n, int i, int j) {
+        private int moda(int[] buffer){
+            int nVezes = 0;
+            int moda = 0;
+            int comparaV = 0;
+            for(int p = 0; p < buffer.length; p++){
+                nVezes = 0;
+                for(int k = p+1; k < buffer.length; k++){
+                    if( buffer[p] == buffer[k] ){
+                        ++nVezes;
+                    }
+                }
+                if (nVezes > comparaV ){
+                    moda = buffer[p];
+                    comparaV = nVezes;
+                }
+            }
+            return moda;
+        }
+
+        int swapBits(int n, int i, int j) {
             int a = (n >> i) & 1;
             int b = (n >> j) & 1;
 
@@ -268,11 +310,10 @@ public class MainActivity extends AppCompatActivity {
             return n;
         }
 
-        public void grafico(int[] buffer) { // Grafico
-            double  x,y;
+        void grafico(int[] buffer) { // Grafico
+            double x, y;
             x = 0.0;
             int tam = 1000;
-
 
 
             GraphView graph = findViewById(R.id.graph);
@@ -286,20 +327,19 @@ public class MainActivity extends AppCompatActivity {
             graph.getViewport().setScalable(true);
             graph.getViewport().setScrollable(true);
 
-           // StaticLabelsFormatter staticLabelsFormatter = new StaticLabelsFormatter(graph);
+            // StaticLabelsFormatter staticLabelsFormatter = new StaticLabelsFormatter(graph);
             //graph.getViewport().setYAxisBoundsManual(true);
             //staticLabelsFormatter.setVerticalLabels(new String[]{"0","0.5", "1", "1.5", "2", "2.5","3", "3.5", "4", "4.5", "5"});
             //graph.getGridLabelRenderer().setLabelFormatter(staticLabelsFormatter);
-           // graph.getViewport().setMinY(0);
-           // graph.getViewport().setMaxY(5);
-
+            // graph.getViewport().setMinY(0);
+            // graph.getViewport().setMaxY(5);
 
 
             for (int i = 0; i < 1000; i++) {
                 x = x + 2;
 
-                y=((buffer[i]*5)/255);
-                Log.d("Recebido", "Y =  " +y + " I= "+i );
+                y = ((buffer[i] * 5) / 255) - 2.5;
+                Log.d("Recebido", "Y =  " + y + " I= " + i);
                 series.appendData(new DataPoint(x, y), true, 1024);
 
             }
@@ -307,7 +347,7 @@ public class MainActivity extends AppCompatActivity {
 
             graph.removeAllSeries();
             //graph.setScaleY(Sx);
-          //  graph.setScaleX(Sx);
+            //  graph.setScaleX(Sx);
             graph.addSeries(series);
         }
 
@@ -316,6 +356,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 mmOutStream.write(bytes);
             } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
