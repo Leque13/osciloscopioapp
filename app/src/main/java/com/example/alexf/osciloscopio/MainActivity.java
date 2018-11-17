@@ -213,9 +213,8 @@ public class MainActivity extends AppCompatActivity {
                         bufferFloat[j] = inteiro;// transformar o byte para float
 
 
-                        Log.d("RecebidoFloat", "Y =  " + bufferFloat[j] + " I= " + i + " Bytes= " + bytes + " Inteiro:  " + inteiro);
+                        //Log.d("RecebidoFloat", "Y =  " + bufferFloat[j] + " I= " + i + " Bytes= " + bytes + " Inteiro:  " + inteiro);
                         i++;
-
 
 
                     }
@@ -234,7 +233,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
-
 
 
         void grafico(float[] buffer) { // Grafico
@@ -263,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < 1000; i++) {
                 x = x + 0.01;
 
-                yy = ((buffer[i] * 5)/255);
+                yy = ((buffer[i] * 5) / 255);
                 Log.d("RecebidoB", "Y =  " + yy + " I= " + i);
                 series.appendData(new DataPoint(x, yy), true, 3000);
 
