@@ -94,51 +94,24 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-
-       /* // Grafico
-        double y, x;
-        x = 0;
-        bufferint[0] = 254;
-        GraphView graph = (GraphView) findViewById(R.id.graph);
-        LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>();
-        // graph.getGridLabelRenderer().setNumVerticalLabels(5);
-
-        graph.getGridLabelRenderer().setVerticalAxisTitle("Volts");
-        graph.getGridLabelRenderer().setHorizontalAxisTitle("Tempo");
-
-
-        graph.getViewport().setScalable(true);
-        graph.getViewport().setScrollable(true);
-
-        StaticLabelsFormatter staticLabelsFormatter = new StaticLabelsFormatter(graph);
-        //graph.getViewport().setYAxisBoundsManual(true);
-        staticLabelsFormatter.setVerticalLabels(new String[]{"0", "1", "2", "3", "4", "5"});
-        graph.getGridLabelRenderer().setLabelFormatter(staticLabelsFormatter);
-        graph.getViewport().setMinY(0);
-        graph.getViewport().setMaxY(5);
-
-
-        for (int i = 0; i < 1000; i++) {
-            x = x + 1;
-            if (i < 100 || i > 200) {
-                y = 5;
-            } else {
-                y = 0;
+        final Button btnStop = findViewById(R.id.btnStop);
+        btnStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(conexao){
+                    if (connectedThread != null){
+                        if(connectedThread.isInterrupted()){
+                           btnStop.setText("Pausar");
+                           connectedThread.start();
+                        } else {
+                            connectedThread.interrupt();
+                            btnStop.setText("Continuar");
+                        }
+                    }
+                }
             }
-            series.appendData(new DataPoint(x, y), true, 1000);
-        }
-        float Sx = 1;
+        });
 
-
-        //graph.getViewport().setScalable(true);
-        // graph.getViewport().setScrollableY(true);
-        // graph.getViewport().setScalableY(true);
-
-        // graph.getViewport().setYAxisBoundsManual(true);
-
-        graph.setScaleY(Sx);
-        graph.setScaleX(Sx);
-        graph.addSeries(series); */
 
     }
 
@@ -235,73 +208,23 @@ public class MainActivity extends AppCompatActivity {
                     for (int j = 0; j < bytes; j++) {
 
                         inteiro = buffer[j] & 0xff;
-                        inteiro2 = buffer[j + 1] & 0xff;
+
 
                         bufferFloat[j] = inteiro;// transformar o byte para float
 
 
-                        Log.d("Recebido", "Y =  " + bufferFloat[j] + " I= " + i + " Bytes= " + bytes + " Inteiro:  " + inteiro);
+                        Log.d("RecebidoFloat", "Y =  " + bufferFloat[j] + " I= " + i + " Bytes= " + bytes + " Inteiro:  " + inteiro);
                         i++;
 
-                        //Inverte os Bits do int
-//                        for (int i = 0; i < 4; i++) {
-//                            bufferint[j] = swapBits(bufferint[j], i, 8 - i - 1);
-//                        }
 
 
-                        //Mostra o valor já invertido
-                        //Log.d("Recebido", "InputStream " + bufferint[j]+ " Qtd de bytes recebidos: " + bytes + " J: " + j);
-                        // TimeUnit.MILLISECONDS.sleep(2000);
                     }
+                    //TimeUnit.MILLISECONDS.sleep(500);
 
-                    TimeUnit.MILLISECONDS.sleep(2000);
-
-                    // blue = false;
-
-                    //new arrawy
-                  /*  int[] dados = new int[5];
-                    int[] inteiros = new int[buffer.length / 5];
-                    int p = 0;
-                    int x = 0;
-                    for (int i = 0; i < bufferint.length; i++) {
-                        //acumula os dads
-                        dados[x] = bufferint[i];
-                        x++;
-
-                        //verifica se já acumulou 5 dados
-                        if ((i + 1) % 5 == 0) {
-                            inteiros[p] = moda(dados);
-                            p++;
-
-                            //reseta os dados
-                            dados = new int[5];
-                            x = 0;
-                        }
-
-
-                    }*/
-
-                    if (i > bytes) {
+                    if (i > 1000) {
                         i = 0;
 
-                        float[] newbuffer = new float[bufferFloat.length/4];
-                        int c = 0;
-                        int j = 0;
-                        for (int l = 0; l < bufferFloat.length; l ++){
-
-                            if(c == 3){
-                                newbuffer[j] = bufferFloat[l];
-                                j++;
-                            }
-
-                            if(c == 4){
-                                c = 0;
-                            } else {
-                                c++;
-                            }
-                        }
-
-                        grafico(newbuffer);
+                        grafico(bufferFloat);
                     }
 
                 } catch (Exception e) {
@@ -312,48 +235,17 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-       /* private int moda(int[] buffer){
-            int nVezes = 0;
-            int moda = 0;
-            int comparaV = 0;
-            for(int p = 0; p < buffer.length; p++){
-                nVezes = 0;
-                for(int k = p+1; k < buffer.length; k++){
-                    if( buffer[p] == buffer[k] ){
-                        ++nVezes;
-                    }
-                }
-                if (nVezes > comparaV ){
-                    moda = buffer[p];
-                    Log.d("Recebido", "Y =  " + moda);
-                    comparaV = nVezes;
-                }
-            }
-            return moda;
-        }*/
 
-        /*int swapBits(int n, int i, int j) {
-            int a = (n >> i) & 1;
-            int b = (n >> j) & 1;
-
-            if ((a ^ b) != 0) {
-                return n ^= (1 << i) | (1 << j);
-            }
-
-            return n;
-        }*/
 
         void grafico(float[] buffer) { // Grafico
             double x, y;
             x = 0.0;
             float yy = 0.0f;
-            int tam = 1000;
 
 
             GraphView graph = findViewById(R.id.graph);
 
-            PointsGraphSeries<DataPoint> series = new PointsGraphSeries<>();
-            // graph.getGridLabelRenderer().setNumVerticalLabels(5);
+            LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>();
 
             graph.getGridLabelRenderer().setVerticalAxisTitle("Volts");
             graph.getGridLabelRenderer().setHorizontalAxisTitle("Tempo MS");
@@ -368,13 +260,12 @@ public class MainActivity extends AppCompatActivity {
             graph.getViewport().setMinY(-5);
             graph.getViewport().setMaxY(5);
 
-
             for (int i = 0; i < 1000; i++) {
                 x = x + 0.01;
 
-                yy = ((buffer[i] * 5) / 255);
+                yy = ((buffer[i] * 5)/255);
                 Log.d("RecebidoB", "Y =  " + yy + " I= " + i);
-                series.appendData(new DataPoint(x, yy), true, 1000);
+                series.appendData(new DataPoint(x, yy), true, 3000);
 
             }
             float Sx = 1;
@@ -384,11 +275,6 @@ public class MainActivity extends AppCompatActivity {
             //  graph.setScaleX(Sx);
             series.setTitle("Random Curve 1");
             series.setColor(Color.RED);
-            series.setSize(2f);
-//            series.setDrawDataPoints(true);
-//            series.setDataPointsRadius(10);
-//            series.setThickness(8);
-            series.setShape(PointsGraphSeries.Shape.POINT);
             graph.addSeries(series);
 
         }

@@ -8,45 +8,39 @@
     tools:context=".MainActivity">
 
 
-    <TextView
-        android:id="@+id/sample_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <com.jjoe64.graphview.GraphView
         android:id="@+id/graph"
-        android:layout_width="600dp"
-        android:layout_height="350dp"
-        android:layout_marginTop="2dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="2dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnConexao"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.095"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        app:layout_constraintEnd_toStartOf="@id/btnConexao"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintVertical_bias="0.0"
+        android:layout_marginRight="16dp" />
 
     <Button
+        android:textColor="#fff"
+        android:background="@color/colorPrimary"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:id="@+id/btnConexao"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="47dp"
-        android:layout_marginLeft="47dp"
+        android:text="Conectar"
+        android:layout_marginRight="16dp" />
+
+    <Button
+        android:id="@+id/btnStop"
+        android:textColor="@color/colorPrimary"
+        android:text="Pausar"
+        android:background="?attr/selectableItemBackground"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="323dp"
-        android:text="Conectar"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnConexao"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/graph"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="16dp" />
 
 </android.support.constraint.ConstraintLayout>
